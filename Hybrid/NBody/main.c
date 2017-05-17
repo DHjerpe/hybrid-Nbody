@@ -76,34 +76,18 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     
     int upperLimit = N;
     
-    //args_p args[NUMTHREADS];
-   // pthread_t threads[NUMTHREADS];
-    
-    
     int my_rank;
     int interval = upperLimit/NPROCS;
     MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
     
-   // for (int i = 0; i< NPROCS; i++) {
-        
-       // args[i].lowerLimit = i*interval;
-    
     int lowerLimit = my_rank * interval;
     
         if (my_rank <  NPROCS - 1) {
-          //  args[i].upperLimit = i*interval + interval;
             
             upperLimit = my_rank * interval + interval;
             
         }
-    //    else {
-           // args[i].upperLimit = upperLimit;
-      //  }
-        
-       // args[i].p_buffer = p_buffer;
-       // args[i].p = p;
-      // args[i].quad_tree = quad_tree;
-    //}
+ 
     
     int numberToSend = (upperLimit - lowerLimit)*5;
     //int numberToSend = (upperLimit - lowerLimit);
@@ -114,7 +98,7 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     memcpy(p_buffer,p,sizeof(double)*N*5);
     
     
-//    omp_set_num_threads(NUMTHREADS);
+    omp_set_num_threads(NUMTHREADS);
     
     
     for (int n = 0; n<nsteps; n++) {
