@@ -121,7 +121,12 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
         
 #pragma omp parallel
         {
-        
+            double r; double mass;
+            double x_diff, y_diff;
+            double a_x, a_y;
+            double u_x, u_y;
+            
+            
         #pragma omp parallel for 
         for (int i = lowerLimit; i<upperLimit; i++) {
             double sumX = 0;
