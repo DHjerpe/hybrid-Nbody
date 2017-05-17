@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
         free(p);
         p = NULL;
         
-        total_end = MPI_Wtime();
+        wtime_end = MPI_Wtime();
         
-        if (my_rank == 0) {
+        if (my_rank == 0)
             printf("Total time: %.4f \n", wtime_end - wtime_start);
         
         
@@ -78,12 +78,6 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
   
     N = N/5;
     double G = 100.0/N;
-    
-    double r; double mass;
-    double x_diff, y_diff;
-    double a_x, a_y;
-    double u_x, u_y;
-    
     
     int upperLimit = N;
     
@@ -101,8 +95,7 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
  
     
     int numberToSend = (upperLimit - lowerLimit)*5;
-    //int numberToSend = (upperLimit - lowerLimit);
-    
+
 
     double * p_buffer = NULL;
     p_buffer = (double *)malloc(sizeof(double)*N*5);
@@ -146,7 +139,6 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
                 }
             }
             
-            //printf("forceX: %lf \t forceY: %lf \n",sumX,sumY);
             
             a_x = -G*sumX;
             a_y = -G*sumY;
@@ -174,7 +166,6 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
         
         
         // copy the new values to p
-
         memcpy(p,p_buffer,sizeof(double)*N*5);
         
         
