@@ -114,7 +114,7 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     memcpy(p_buffer,p,sizeof(double)*N*5);
     
     
-    omp_set_num_threads(NUMTHREADS);
+//    omp_set_num_threads(NUMTHREADS);
     
     
     for (int n = 0; n<nsteps; n++) {
@@ -122,7 +122,7 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
 #pragma omp parallel
         {
         
-        #pragma omp parallel for
+        #pragma omp parallel for 
         for (int i = lowerLimit; i<upperLimit; i++) {
             double sumX = 0;
             double sumY = 0;
