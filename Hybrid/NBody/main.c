@@ -28,6 +28,9 @@ int main(int argc, char** argv) {
     
     if (argc > 5) { // run only if number of arguments is correct
         
+        double wtime_end;
+        double wtime_start = MPI_Wtime();
+        int my_rank;
         int N = atoi(argv[1])*5;
         int nsteps = atoi(argv[3]);
         double delta_t = atof(argv[4]);
@@ -45,6 +48,8 @@ int main(int argc, char** argv) {
         
         MPI_Init(&argc, &argv);
         MPI_Comm_size(MPI_COMM_WORLD, &NPROCS);
+    
+        MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
         
         
         forceCalc(p,N,delta_t,nsteps);
@@ -56,6 +61,12 @@ int main(int argc, char** argv) {
         
         free(p);
         p = NULL;
+        
+        total_end = MPI_Wtime();
+        
+        if (my_rank == 0) {
+            printf("Total time: %.4f \n", wtime_end - wtime_start);
+        
         
     } else {printErrorMsg();}
     
