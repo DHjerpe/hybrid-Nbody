@@ -1,0 +1,11 @@
+# files to igore goe in this file 
+galsim
+test
+*.o*
+*.aux
+*.gal*
+*.pdf*
+*.tex*
+*.gz*
+*.log*
+*.DS_Store*
