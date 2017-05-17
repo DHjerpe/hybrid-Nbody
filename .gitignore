@@ -3,7 +3,7 @@ galsim
 test
 *.o*
 *.aux
-*.gal*
+# *.gal*
 *.pdf*
 *.tex*
 *.gz*
