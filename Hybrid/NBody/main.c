@@ -64,11 +64,8 @@ int main(int argc, char** argv) {
         
         wtime_end = MPI_Wtime();
         
-<<<<<<< HEAD
-        if (my_rank == 0) 
-=======
         if (my_rank == 0)
->>>>>>> c14e80c7b37ed06ab2afe3b71f45aeb95941a274
+
             printf("Total time: %.4f \n", wtime_end - wtime_start);
         
         
