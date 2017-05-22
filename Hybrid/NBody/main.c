@@ -9,26 +9,24 @@
 
 #define EPSILON 1e-3
 
-#define VERIFY 1
-
-
 int NPROCS;
 
 /* Five input arguments:
  1: N = number of stars                                         (argv[1])
  2: nsteps = number of time steps                               (argv[2])
  3: delta_t = size of time step                                 (argv[3])
- 4: VERIFY, 0 = NO, 1 = YES (Default)                           (argv[3])
+ 4: VERIFY, 0 = NO, 1 = YES (Default)                           (argv[4])
  */
 int main(int argc, char** argv) {
     
-    if (argc > 3) { // run only if number of arguments is correct
+    if (argc > 4) { // run only if number of arguments is correct
         
         double wtime_end;
         double wtime_start = MPI_Wtime();
         int my_rank;
         int N = atoi(argv[1])*5;
         int nsteps = atoi(argv[2]);
+	int verify = atoi(argv[4]);
         double delta_t = atof(argv[3]);
         
         double * p = NULL;
@@ -51,7 +49,7 @@ int main(int argc, char** argv) {
         MPI_Finalize();
 
         
-        if (VERIFY) {
+        if (verify) {
             
             double * p_ref = NULL;
             p_ref = (double *)malloc(sizeof(double)*N);
@@ -282,9 +280,10 @@ void generateStars(double * p, int N) {
 
 void printErrorMsg() {
     
-    printf("Error, wrong number of input arguments.\nThe input arguments shoulc hav the form:  \n");
-    printf("1: number of stars \n");
-    printf("2: number of time steps \n");
-    printf("3: size of time step  \n");
+    printf("Error, wrong number of input arguments.\nThe input arguments should have the following form:  \n");
+    printf("1: The number of stars \n");
+    printf("2: The number of time steps \n");
+    printf("3: The size of time step  \n");
+    printf("4: Verify ON/OFF (1/0)  \n");
 }
 
