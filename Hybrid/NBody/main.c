@@ -11,7 +11,7 @@
 
 void printErrorMsg();
 void forceCalc(double * p, int N,double delta_t, int nsteps);
-
+void generateStars(double * p, int size) ;
 int NPROCS;
 // int NUMTHREADS;
 
@@ -41,18 +41,29 @@ int main(int argc, char** argv) {
         double * p = NULL;
         p = (double *)malloc(sizeof(double)*N);
         
-        read_doubles_from_file(N, p, argv[2]);
         
-        char *outp = "result.gal";
         
-        for (int i = 0; i<N; i++) {
+        generateStars(p, N/5);
         
-            printf("pos x %.2f \n",p[i*5]);
-            printf("pos y %.2f \n",p[i*5]);
-            printf("mass %.2f \n",p[i*5]);
-            printf("vel x %.2f \n",p[i*5]);
-            printf("vel y %.2f \n",p[i*5]);
-        }
+        
+         
+         for (int i = 0; i<N; i++) {
+         
+         printf("pos x %.2f \n",p[i*5]);
+         printf("pos y %.2f \n",p[i*5]);
+         printf("mass %.2f \n",p[i*5]);
+         printf("vel x %.2f \n",p[i*5]);
+         printf("vel y %.2f \n",p[i*5]);
+         }
+         
+
+        
+        
+        
+        //read_doubles_from_file(N, p, argv[2]);
+        
+       // char *outp = "result.gal";
+     
         
         
         
@@ -67,7 +78,7 @@ int main(int argc, char** argv) {
         
         MPI_Finalize();
         
-        write_doubles_to_file(N,p,outp);
+       // write_doubles_to_file(N,p,outp);
         
         free(p);
         p = NULL;
@@ -189,7 +200,21 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     p_buffer = NULL;
 }
 
-
+void generateStars(double * p, int size) {
+    
+    
+    srand(256); // choose a locatoin in the "random numbers" array
+    
+    for (int i = 0; i<size; i++) {
+        
+        p[i*5] = (rand() % 100) / 100; // pos x
+        p[i*5+1] = (rand() % 100) / 100; // pos x
+        p[i*5+2] = (rand() % 100) / 100; // pos x
+        p[i*5+3] = (rand() % 100) / 100; // pos x
+        p[i*5+4] = (rand() % 100) / 100; // pos x
+    }
+    
+}
 
 void printErrorMsg() {
     
