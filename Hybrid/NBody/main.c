@@ -45,6 +45,16 @@ int main(int argc, char** argv) {
         
         char *outp = "result.gal";
         
+        for (int i = 0; i<N; i++) {
+        
+            printf("pos x %.2f \n",p[i*5]);
+            printf("pos y %.2f \n",p[i*5]);
+            printf("mass %.2f \n",p[i*5]);
+            printf("vel x %.2f \n",p[i*5]);
+            printf("vel y %.2f \n",p[i*5]);
+        }
+        
+        
         
         MPI_Init(&argc, &argv);
         MPI_Comm_size(MPI_COMM_WORLD, &NPROCS);
