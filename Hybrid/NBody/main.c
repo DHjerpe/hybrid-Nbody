@@ -1,23 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "file_operations.h"
 #include <string.h>
 #include <math.h>
 #include <mpi.h>
 #include <omp.h>
-
+#include "main.h"
 
 #define EPSILON 1e-3
 
-void printErrorMsg();
-void forceCalc(double * p, int N,double delta_t, int nsteps);
-void generateStars(double * p, int size) ;
+#define VERIFY 1
+
+
 int NPROCS;
 
 /* Five input arguments:
  1: N = number of stars                                         (argv[1])
- 3: nsteps = number of time steps                               (argv[2])
- 4: delta_t = size of time step                                 (argv[3])
+ 2: nsteps = number of time steps                               (argv[2])
+ 3: delta_t = size of time step                                 (argv[3])
+ 4: VERIFY, 0 = NO, 1 = YES (Default)                           (argv[3])
  */
 int main(int argc, char** argv) {
     
@@ -49,6 +49,25 @@ int main(int argc, char** argv) {
         
         MPI_Finalize();
 
+        
+        if (VERIFY) {
+            omp_set_num_threads(1);
+            double * p_ref = NULL;
+            p_ref = (double *)malloc(sizeof(double)*N);
+            generateStars(p_ref, N/5);
+            
+            for (int i = 0; i<N/5; i++) {
+            assert(p[i] == p_ref[i]);
+            assert(p[i+1] == p_ref[i+1]);
+            assert(p[i+2] == p_ref[i+2]);
+            assert(p[i+3] == p_ref[i+3]);
+            assert(p[i+4] == p_ref[i+4]);
+            }
+            
+            printf("Verify OK! \n");
+            
+        }
+        
         
         free(p);
         p = NULL;
@@ -158,6 +177,12 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     free(p_buffer);
     p_buffer = NULL;
 }
+
+
+
+
+
+
 /**
  p is a vector containing information about all stars/particles in the system
  p contains: 
