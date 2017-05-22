@@ -21,7 +21,7 @@ int NPROCS;
  */
 int main(int argc, char** argv) {
     
-    if (argc > 5) { // run only if number of arguments is correct
+    if (argc > 3) { // run only if number of arguments is correct
         
         double wtime_end;
         double wtime_start = MPI_Wtime();
