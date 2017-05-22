@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
         double wtime_start = MPI_Wtime();
         int my_rank;
         int N = atoi(argv[1])*5;
-        int nsteps = atoi(argv[3]);
-        double delta_t = atof(argv[4]);
+        int nsteps = atoi(argv[2]);
+        double delta_t = atof(argv[3]);
         
         double * p = NULL;
         p = (double *)malloc(sizeof(double)*N);
@@ -51,17 +51,19 @@ int main(int argc, char** argv) {
 
         
         if (VERIFY) {
-            omp_set_num_threads(1);
+            
             double * p_ref = NULL;
             p_ref = (double *)malloc(sizeof(double)*N);
             generateStars(p_ref, N/5);
             
+            forceCalcVerify(p_ref,N,delta_t,nsteps);
+            
             for (int i = 0; i<N/5; i++) {
-            assert(p[i] == p_ref[i]);
-            assert(p[i+1] == p_ref[i+1]);
-            assert(p[i+2] == p_ref[i+2]);
-            assert(p[i+3] == p_ref[i+3]);
-            assert(p[i+4] == p_ref[i+4]);
+                assert(p[i] == p_ref[i]);
+                assert(p[i+1] == p_ref[i+1]);
+                assert(p[i+2] == p_ref[i+2]);
+                assert(p[i+3] == p_ref[i+3]);
+                assert(p[i+4] == p_ref[i+4]);
             }
             
             printf("Verify OK! \n");
@@ -179,7 +181,70 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
 }
 
 
+void forceCalcVerify(double * p, int N,double delta_t, int nsteps) {
+    
+    N = N/5;
+    double G = 100.0/N;
+    
+    double * p_buffer = NULL;
+    p_buffer = (double *)malloc(sizeof(double)*N*5);
+    memcpy(p_buffer,p,sizeof(double)*N*5);
+    
+    
+    for (int n = 0; n<nsteps; n++) {
 
+            double r; double mass;
+            double x_diff, y_diff;
+            double a_x, a_y;
+            double u_x, u_y;
+    
+
+            for (int i = 0; i<N; i++) {
+                double sumX = 0;
+                double sumY = 0;
+                
+                for (int j = 0; j<N; j++) {
+                    
+                    if (i != j) {
+                        x_diff = (p[i*5]-p[j*5]);     // rij (vector), x-component
+                        y_diff = (p[i*5+1]-p[j*5+1]); // rij (vector), y-component
+                        
+                        r = sqrt((x_diff*x_diff) + (y_diff*y_diff));
+                        
+                        mass = p[j*5+2];
+                        mass /= ((r+EPSILON)*(r+EPSILON)*(r+EPSILON)); // not mass. total constant
+                        
+                        x_diff *= mass;
+                        y_diff *= mass;
+                        
+                        sumX += x_diff;
+                        sumY += y_diff;
+                    }
+                }
+            
+                a_x = -G*sumX;
+                a_y = -G*sumY;
+                
+                // veloceties
+                u_x = p[i*5+3] + delta_t*a_x;
+                u_y = p[i*5+4] + delta_t*a_y;
+                
+                // update veloceties
+                p_buffer[i*5+3] = u_x;
+                p_buffer[i*5+4] = u_y;
+                
+                // update position
+                p_buffer[i*5] = p[i*5] + delta_t*u_x;
+                p_buffer[i*5+1] = p[i*5+1] + delta_t*u_y;
+            }
+    
+        // copy the new values to p
+        memcpy(p,p_buffer,sizeof(double)*N*5);
+    }
+    
+    free(p_buffer);
+    p_buffer = NULL;
+}
 
 
 
