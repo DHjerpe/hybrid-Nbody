@@ -13,16 +13,11 @@ void printErrorMsg();
 void forceCalc(double * p, int N,double delta_t, int nsteps);
 void generateStars(double * p, int size) ;
 int NPROCS;
-// int NUMTHREADS;
-
 
 /* Five input arguments:
  1: N = number of stars                                         (argv[1])
- 2: filename = file to read initial configuration of the system (argv[2])
- 3: nsteps = number of time steps                               (argv[3])
- 4: delta_t = size of time step                                 (argv[4])
- 5: graphics is either 1/0 (on/off)                             (argv[5])
- 6: number of threads in each node                              (argv[6])
+ 3: nsteps = number of time steps                               (argv[2])
+ 4: delta_t = size of time step                                 (argv[3])
  */
 int main(int argc, char** argv) {
     
@@ -35,36 +30,12 @@ int main(int argc, char** argv) {
         int nsteps = atoi(argv[3]);
         double delta_t = atof(argv[4]);
         
-//        NUMTHREADS = atoi(argv[6]);
-        
-        
         double * p = NULL;
         p = (double *)malloc(sizeof(double)*N);
         
         
         
         generateStars(p, N/5);
-        
-        
-         
-         for (int i = 0; i<N/5; i++) {
-         
-         printf("pos x %.2f \n",p[i*5]);
-         printf("pos y %.2f \n",p[i*5+1]);
-         printf("mass %.2f \n",p[i*5+2]);
-         printf("vel x %.2f \n",p[i*5+3]);
-         printf("vel y %.2f \n",p[i*5+4]);
-         }
-         
-
-        
-        
-        
-        //read_doubles_from_file(N, p, argv[2]);
-        
-       // char *outp = "result.gal";
-     
-        
         
         
         MPI_Init(&argc, &argv);
@@ -77,8 +48,7 @@ int main(int argc, char** argv) {
         
         
         MPI_Finalize();
-        
-       // write_doubles_to_file(N,p,outp);
+
         
         free(p);
         p = NULL;
@@ -95,7 +65,7 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-// TODO: Optimise
+
 void forceCalc(double * p, int N,double delta_t, int nsteps) {
   
     N = N/5;
@@ -122,9 +92,6 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     double * p_buffer = NULL;
     p_buffer = (double *)malloc(sizeof(double)*N*5);
     memcpy(p_buffer,p,sizeof(double)*N*5);
-    
-    
-//    omp_set_num_threads(NUMTHREADS);
     
     
     for (int n = 0; n<nsteps; n++) {
@@ -178,10 +145,6 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
             p_buffer[i*5+1] = p[i*5+1] + delta_t*u_y;
         }
         
-        /* int MPI_Allgather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
-         void *recvbuf, int recvcount, MPI_Datatype recvtype,
-         MPI_Comm comm) */
-        
         }
         
         MPI_Allgather(MPI_IN_PLACE, numberToSend, MPI_DOUBLE, p_buffer, numberToSend, MPI_DOUBLE, MPI_COMM_WORLD);
@@ -190,43 +153,46 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
         // copy the new values to p
         memcpy(p,p_buffer,sizeof(double)*N*5);
         
-        
-        
-
-        
     }
     
     free(p_buffer);
     p_buffer = NULL;
 }
-
-void generateStars(double * p, int size) {
+/**
+ p is a vector containing information about all stars/particles in the system
+ p contains: 
+ - x position
+ - y position
+ - mass
+ - x velocity
+ - y velocity
+ 
+ N is the total number of stars/particles
+ */
+void generateStars(double * p, int N) {
     
-    int randLoc = 256; 
+    int randLoc = 256;
     srand(randLoc); // choose a locatoin in the "random numbers" array
     
-    for (int i = 0; i<size; i++) {
+    for (int i = 0; i<N; i++) {
         
         p[i*5] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos x
         ++randLoc; srand(randLoc);
-	p[i*5+1] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos y
+        p[i*5+1] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos y
         ++randLoc; srand(randLoc);
-	p[i*5+2] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // mass
+        p[i*5+2] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // mass
         ++randLoc; srand(randLoc);
-	p[i*5+3] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity x
+        p[i*5+3] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity x
         ++randLoc; srand(randLoc);
-	p[i*5+4] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity y
-	++randLoc; srand(randLoc);
+        p[i*5+4] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity y
+        ++randLoc; srand(randLoc);
     }
-    
 }
 
 void printErrorMsg() {
     
     printf("Error, wrong number of input arguments.\nThe input arguments shoulc hav the form:  \n");
     printf("1: number of stars \n");
-    printf("2: file to read initial configuration of the system from \n");
-    printf("3: number of time steps \n");
-    printf("4: size of time step  \n");
-    printf("5: graphics is either 1/0 (on/off) \n");
+    printf("2: number of time steps \n");
+    printf("3: size of time step  \n");
 }
