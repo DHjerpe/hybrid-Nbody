@@ -13,7 +13,7 @@ void printErrorMsg();
 void forceCalc(double * p, int N,double delta_t, int nsteps);
 
 int NPROCS;
-int NUMTHREADS;
+// int NUMTHREADS;
 
 
 /* Five input arguments:
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
         int nsteps = atoi(argv[3]);
         double delta_t = atof(argv[4]);
         
-        NUMTHREADS = atoi(argv[6]);
+//        NUMTHREADS = atoi(argv[6]);
         
         
         double * p = NULL;
@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
         wtime_end = MPI_Wtime();
         
         if (my_rank == 0)
+
             printf("Total time: %.4f \n", wtime_end - wtime_start);
         
         
@@ -112,7 +113,7 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
     memcpy(p_buffer,p,sizeof(double)*N*5);
     
     
-    omp_set_num_threads(NUMTHREADS);
+//    omp_set_num_threads(NUMTHREADS);
     
     
     for (int n = 0; n<nsteps; n++) {
@@ -125,7 +126,7 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
             double u_x, u_y;
             
             
-        #pragma omp parallel for 
+        #pragma omp for 
         for (int i = lowerLimit; i<upperLimit; i++) {
             double sumX = 0;
             double sumY = 0;
