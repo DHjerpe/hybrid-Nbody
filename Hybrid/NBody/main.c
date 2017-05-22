@@ -47,13 +47,13 @@ int main(int argc, char** argv) {
         
         
          
-         for (int i = 0; i<N; i++) {
+         for (int i = 0; i<N/5; i++) {
          
          printf("pos x %.2f \n",p[i*5]);
-         printf("pos y %.2f \n",p[i*5]);
-         printf("mass %.2f \n",p[i*5]);
-         printf("vel x %.2f \n",p[i*5]);
-         printf("vel y %.2f \n",p[i*5]);
+         printf("pos y %.2f \n",p[i*5+1]);
+         printf("mass %.2f \n",p[i*5+2]);
+         printf("vel x %.2f \n",p[i*5+3]);
+         printf("vel y %.2f \n",p[i*5+4]);
          }
          
 
@@ -202,16 +202,21 @@ void forceCalc(double * p, int N,double delta_t, int nsteps) {
 
 void generateStars(double * p, int size) {
     
-    
-    srand(256); // choose a locatoin in the "random numbers" array
+    int randLoc = 256; 
+    srand(randLoc); // choose a locatoin in the "random numbers" array
     
     for (int i = 0; i<size; i++) {
         
-        p[i*5] = (rand() % 100) / 100; // pos x
-        p[i*5+1] = (rand() % 100) / 100; // pos x
-        p[i*5+2] = (rand() % 100) / 100; // pos x
-        p[i*5+3] = (rand() % 100) / 100; // pos x
-        p[i*5+4] = (rand() % 100) / 100; // pos x
+        p[i*5] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos x
+        ++randLoc; srand(randLoc);
+	p[i*5+1] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos y
+        ++randLoc; srand(randLoc);
+	p[i*5+2] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // mass
+        ++randLoc; srand(randLoc);
+	p[i*5+3] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity x
+        ++randLoc; srand(randLoc);
+	p[i*5+4] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity y
+	++randLoc; srand(randLoc);
     }
     
 }
