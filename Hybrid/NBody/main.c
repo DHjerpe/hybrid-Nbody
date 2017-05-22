@@ -5,6 +5,7 @@
 #include <mpi.h>
 #include <omp.h>
 #include "main.h"
+#include <assert.h>
 
 #define EPSILON 1e-3
 
