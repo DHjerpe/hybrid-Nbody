@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         MPI_Finalize();
 
         
-        if (verify) {
+        if (verify && my_rank == 0) {
             
             double * p_ref = NULL;
             p_ref = (double *)malloc(sizeof(double)*N);
