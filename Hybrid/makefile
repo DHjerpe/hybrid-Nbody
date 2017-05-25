@@ -13,7 +13,7 @@ all:$(EXECUTABLE)
 $(EXECUTABLE): $(OBJS)
 	$(LD) $(OBJS) $(LIBS) -o $(EXECUTABLE) -fopenmp
 
-main.o: main.c main.h
+main.o: main.c
 	$(CC) $(CFLAGS) -c main.c -fopenmp
 
 clean:

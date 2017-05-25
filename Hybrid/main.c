@@ -4,7 +4,6 @@
 #include <math.h>
 #include <mpi.h>
 #include <omp.h>
-#include "main.h"
 #include <assert.h>
 
 #define EPSILON 1e-3
@@ -23,7 +22,7 @@ typedef struct particle
     double y_vel; // y-component (velocity)
 } particle;
 
-void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
+void forceCalc(particle * particles, int N,double delta_t, int nsteps);
 void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps);
 void generateStars(particle * particles, int size);
 void printErrorMsg();
@@ -54,8 +53,8 @@ int main(int argc, char** argv) {
      //   p = (double *)malloc(sizeof(double)*N);
        
         
-        particle * particle = NULL;
-        particle = (particle *)malloc(sizeof(particle)*N);
+        particle * particles = NULL;
+        particles = (particle *)malloc(sizeof(particle)*N);
         
         generateStars(particles, N);
         
@@ -82,8 +81,8 @@ int main(int argc, char** argv) {
 //            p_ref = (double *)malloc(sizeof(double)*N);
 //            generateStars(p_ref, N/5);
             
-            double * particles_ref = NULL;
-            particles_ref = (particle *)malloc(sizeof(particle));
+            particle * particles_ref = NULL;
+            particles_ref = (particle *)malloc(sizeof(particle)*N);
             generateStars(particles_ref, N);
             
            // forceCalcVerify(p_ref,N,delta_t,nsteps);
@@ -96,21 +95,22 @@ int main(int argc, char** argv) {
 //                assert(p[i+3] == p_ref[i+3]);
 //                assert(p[i+4] == p_ref[i+4]);
                 
-                assert(particles.x_pos == particles_ref.x_pos);
-                assert(particles.y_pos == particles_ref.y_pos);
-                assert(particles.mass == particles_ref.mass);
-                assert(particles.x_vel == particles_ref.x_vel);
-                assert(particles.y_vel == particles_ref.y_vel);
+                assert(particles[i].x_pos == particles_ref[i].x_pos);
+                assert(particles[i].y_pos == particles_ref[i].y_pos);
+                assert(particles[i].mass == particles_ref[i].mass);
+                assert(particles[i].x_vel == particles_ref[i].x_vel);
+                assert(particles[i].y_vel == particles_ref[i].y_vel);
                 
             }
             
             printf("Verify OK! \n");
-            
+            free(particles_ref);
+	    particles_ref = NULL;
         }
         
         
-        free(p);
-        p = NULL;
+        free(particles);
+        particles = NULL;
         
         wtime_end = MPI_Wtime();
         
@@ -149,8 +149,8 @@ int main(int argc, char** argv) {
    // int numberToSend = (upperLimit - lowerLimit)*5;
     int numberToSend = (upperLimit - lowerLimit);
 
-    double * particles_buffer = NULL;
-    particles_buffer = (double *)malloc(sizeof(double)*N*5);
+    particle * particles_buffer = NULL;
+    particles_buffer = (particle *)malloc(sizeof(particle)*N);
     memcpy(particles_buffer,particles,sizeof(particle)*N);
         
     
@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
                     
                     r = sqrt((x_diff*x_diff) + (y_diff*y_diff));
                     
-                    mass = p[j].mass;
+                    mass = particles[j].mass;
                     mass /= ((r+EPSILON)*(r+EPSILON)*(r+EPSILON)); // apply plummer constant
                     
                     x_diff *= mass;
@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
  to the above parallel implementation
  */
 //void forceCalcVerify(double * p, int N,double delta_t, int nsteps) {
-void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
+void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps) {
 
    // N = N/5;
     double G = 100.0/N;
@@ -238,8 +238,8 @@ void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
 //    memcpy(p_buffer,p,sizeof(double)*N*5);
 //    
     
-    double * particles_buffer = NULL;
-    particles_buffer = (double *)malloc(sizeof(double)*N*5);
+    particle * particles_buffer = NULL;
+    particles_buffer = (particle *)malloc(sizeof(particle)*N);
     memcpy(particles_buffer,particles,sizeof(particle)*N);
     
     
@@ -264,7 +264,7 @@ void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
                         
                         r = sqrt((x_diff*x_diff) + (y_diff*y_diff));
                         
-                        mass = p[j].mass;
+                        mass = particles[j].mass;
                         mass /= ((r+EPSILON)*(r+EPSILON)*(r+EPSILON)); // apply plummer constant
                         
                         x_diff *= mass;
@@ -293,7 +293,7 @@ void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
     
         // copy the new values to p
        // memcpy(p,p_buffer,sizeof(double)*N*5);
-         memcpy(p,p_buffer,sizeof(particle)*N);
+         memcpy(particles,particles_buffer,sizeof(particle)*N);
     }
     
     //free(p_buffer);
@@ -321,22 +321,22 @@ void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
  
     - N: the total number of stars/particles
  */
-void generateStars(double * p, int N) {
+void generateStars(particle * particles, int N) {
     
     int randLoc = 256;
     srand(randLoc); // choose a locatoin in the "random numbers" array
     
     for (int i = 0; i<N; i++) {
         
-        p[i*5] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos x
+        particles[i].x_pos = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos x
         ++randLoc; srand(randLoc);
-        p[i*5+1] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos y
+        particles[i].y_pos = (double)rand() / (double)((unsigned)RAND_MAX + 1); // pos y
         ++randLoc; srand(randLoc);
-        p[i*5+2] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // mass
+        particles[i].mass = (double)rand() / (double)((unsigned)RAND_MAX + 1); // mass
         ++randLoc; srand(randLoc);
-        p[i*5+3] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity x
+        particles[i].x_vel = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity x
         ++randLoc; srand(randLoc);
-        p[i*5+4] = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity y
+        particles[i].y_vel = (double)rand() / (double)((unsigned)RAND_MAX + 1); // velocity y
         ++randLoc; srand(randLoc);
     }
 }
