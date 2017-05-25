@@ -43,69 +43,48 @@ int main(int argc, char** argv) {
         double wtime_end;
         double wtime_start = MPI_Wtime();
         int my_rank;
-        //int N = atoi(argv[1])*5;
         int N = atoi(argv[1]);
         int nsteps = atoi(argv[2]);
         int verify = atoi(argv[4]);
         double delta_t = atof(argv[3]);
         
-      //  double * p = NULL;
-     //   p = (double *)malloc(sizeof(double)*N);
-       
         
         particle * particles = NULL;
         particles = (particle *)malloc(sizeof(particle)*N);
         
         generateStars(particles, N);
         
-        //generateStars(p, N/5);
-        
-        
         MPI_Init(&argc, &argv);
         MPI_Comm_size(MPI_COMM_WORLD, &NPROCS);
     
         MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
         
-        
-       // forceCalc(p,N,delta_t,nsteps);
-        
         forceCalc(particles, N, delta_t, nsteps);
         
-        
+    
         MPI_Finalize();
 
         
         if (verify && my_rank == 0) {
             
-//            double * p_ref = NULL;
-//            p_ref = (double *)malloc(sizeof(double)*N);
-//            generateStars(p_ref, N/5);
-            
             particle * particles_ref = NULL;
             particles_ref = (particle *)malloc(sizeof(particle)*N);
             generateStars(particles_ref, N);
             
-           // forceCalcVerify(p_ref,N,delta_t,nsteps);
+            
             forceCalcVerify(particles_ref, N, delta_t, nsteps);
             
             for (int i = 0; i<N/5; i++) {
-//                assert(p[i] == p_ref[i]);
-//                assert(p[i+1] == p_ref[i+1]);
-//                assert(p[i+2] == p_ref[i+2]);
-//                assert(p[i+3] == p_ref[i+3]);
-//                assert(p[i+4] == p_ref[i+4]);
                 
                 assert(particles[i].x_pos == particles_ref[i].x_pos);
                 assert(particles[i].y_pos == particles_ref[i].y_pos);
                 assert(particles[i].mass == particles_ref[i].mass);
                 assert(particles[i].x_vel == particles_ref[i].x_vel);
                 assert(particles[i].y_vel == particles_ref[i].y_vel);
-                
             }
-            
             printf("Verify OK! \n");
             free(particles_ref);
-	    particles_ref = NULL;
+            particles_ref = NULL;
         }
         
         
@@ -115,9 +94,7 @@ int main(int argc, char** argv) {
         wtime_end = MPI_Wtime();
         
         if (my_rank == 0)
-
             printf("Total time: %.4f \n", wtime_end - wtime_start);
-        
         
     } else {printErrorMsg();}
     
@@ -125,10 +102,19 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-//void forceCalc(double * p, int N,double delta_t, int nsteps) {
+/**
+ Hybrid function utilising both MPI and OpenMP.
+ Computes the new position and velocities of the system
+ 
+ Params:
+ - particles: array of structs, each struct containing
+ information about a particle
+ - N: the total number of stars/particles
+ - delta_t: size of the time step
+ - nsteps: number of time steps
+ */
     void forceCalc(particle * particles, int N,double delta_t, int nsteps) {
 
-   // N = N/5;
     double G = 100.0/N;
     
     int upperLimit = N;
@@ -145,15 +131,12 @@ int main(int argc, char** argv) {
             
         }
  
-    
-   // int numberToSend = (upperLimit - lowerLimit)*5;
     int numberToSend = (upperLimit - lowerLimit);
 
     particle * particles_buffer = NULL;
     particles_buffer = (particle *)malloc(sizeof(particle)*N);
     memcpy(particles_buffer,particles,sizeof(particle)*N);
         
-    
     
     for (int n = 0; n<nsteps; n++) {
         
@@ -189,7 +172,6 @@ int main(int argc, char** argv) {
                 }
             }
             
-            
             a_x = -G*sumX;
             a_y = -G*sumY;
             
@@ -210,15 +192,9 @@ int main(int argc, char** argv) {
         
         MPI_Allgather(MPI_IN_PLACE, numberToSend, MPI_DOUBLE, particles_buffer, numberToSend, MPI_DOUBLE, MPI_COMM_WORLD);
         
-        
         // copy the new values to p
         memcpy(particles,particles_buffer,sizeof(particle)*N);
-        
     }
-    
-    //free(p_buffer);
-  //  p_buffer = NULL;
-        
         free(particles_buffer);
         particles_buffer = NULL;
 }
@@ -226,23 +202,21 @@ int main(int argc, char** argv) {
 /**
  A vanilla function (serial), that computes a reference 
  to the above parallel implementation
+ 
+ Params:
+    - particles: array of structs, each struct containing
+    information about a particle
+    - N: the total number of stars/particles
+    - delta_t: size of the time step
+    - nsteps: number of time steps
  */
-//void forceCalcVerify(double * p, int N,double delta_t, int nsteps) {
 void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps) {
 
-   // N = N/5;
     double G = 100.0/N;
-    
-//    double * p_buffer = NULL;
-//    p_buffer = (double *)malloc(sizeof(double)*N*5);
-//    memcpy(p_buffer,p,sizeof(double)*N*5);
-//    
     
     particle * particles_buffer = NULL;
     particles_buffer = (particle *)malloc(sizeof(particle)*N);
     memcpy(particles_buffer,particles,sizeof(particle)*N);
-    
-    
     
     for (int n = 0; n<nsteps; n++) {
 
@@ -251,7 +225,6 @@ void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps) {
             double a_x, a_y;
             double u_x, u_y;
     
-
             for (int i = 0; i<N; i++) {
                 double sumX = 0;
                 double sumY = 0;
@@ -274,7 +247,7 @@ void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps) {
                         sumY += y_diff;
                     }
                 }
-            
+        
                 a_x = -G*sumX;
                 a_y = -G*sumY;
                 
@@ -290,18 +263,11 @@ void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps) {
                 particles_buffer[i].x_pos = particles[i].x_pos + delta_t*u_x;
                 particles_buffer[i].y_pos = particles[i].y_pos + delta_t*u_y;
             }
-    
-        // copy the new values to p
-       // memcpy(p,p_buffer,sizeof(double)*N*5);
          memcpy(particles,particles_buffer,sizeof(particle)*N);
     }
-    
-    //free(p_buffer);
-    //p_buffer = NULL;
-    
+
     free(particles_buffer);
     particles_buffer = NULL;
-    
 }
 
 
@@ -311,14 +277,8 @@ void forceCalcVerify(particle * particles, int N,double delta_t, int nsteps) {
  random positions, and random velocities
  
  Params:
-    - p: vector containing information about all stars/particles in the system
- p contains: 
- - x position
- - y position
- - mass
- - x velocity
- - y velocity
- 
+    - particles: array of structs, each struct containing
+    information about a particle
     - N: the total number of stars/particles
  */
 void generateStars(particle * particles, int N) {
